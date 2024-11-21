@@ -1,58 +1,82 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function Calculator() {
   const [input, setInput] = useState('');
   const [result, setResult] = useState(null);
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value.replace(/[^0-9+\-*/.]/g, ''));
+  const handleNumberClick = (value) => {
+    setInput(input + value);
   };
 
-  const calculate = useCallback(() => {
+  const handleOperation = (operation) => {
+    if (input === '') return;
+    setInput(input + ' ' + operation + ' ');
+  };
+
+  const calculate = () => {
     try {
-      // Using eval for simplicity; in production, use a safer method like a math library or custom parser
-      const res = eval(input);
-      setResult(res);
+      // Replace 'x' with '*' for multiplication
+      const calculatedResult = eval(input.replace(/x/g, '*'));
+      setResult(calculatedResult);
     } catch (e) {
       setResult('Error');
     }
-  }, [input]);
-
-  const getResultColor = () => {
-    if (result === 'Error') return 'text-red-500';
-    return result >= 0 ? 'text-green-500' : 'text-red-500';
   };
 
+  const clear = () => {
+    setInput('');
+    setResult(null);
+  };
+
+  const resultColor = result >= 0 ? 'text-green-600' : 'text-red-600';
+
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-blue-50 p-4 sm:p-8">
-      <div className="w-full max-w-xs">
+    <Card className="max-w-sm mx-auto mt-10 p-4">
+      <CardHeader>
+        <CardTitle>Kids Calculator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        
         <Input 
           type="text" 
           value={input} 
-          onChange={handleInputChange} 
-          placeholder="Type your calculation"
-          className="mb-4 text-right"
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type numbers and operations"
+          className="mb-4"
         />
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <Button onClick={() => setInput(input + '+')}>+</Button>
-          <Button onClick={() => setInput(input + '-')}>-</Button>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {[7, 8, 9, '+', 4, 5, 6, '-', 1, 2, 3, 'x', '.', 0, 'C', '=']
+            .map(num => (
+              <Button 
+                key={num} 
+                onClick={() => {
+                  if (num === '=') calculate();
+                  else if (num === 'C') clear();
+                  else if (num === '+' || num === '-' || num === 'x') handleOperation(num);
+                  else handleNumberClick(num);
+                }}
+                variant={num === '=' ? "secondary" : "default"}
+              >
+                {num}
+              </Button>
+            ))}
         </div>
-        <Button onClick={calculate} className="w-full mb-2">Calculate</Button>
         {result !== null && (
-          <div className={`text-2xl font-bold text-center ${getResultColor()}`}>
-            {result}
-          </div>
+          <p className={`text-2xl font-bold text-center ${resultColor}`}>
+            Result: {result}
+          </p>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Calculator />
     </div>
   );
