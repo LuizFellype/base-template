@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -18,57 +18,74 @@ const GameCard = React.memo(({ color, isFlipped, onClick }) => {
   );
 });
 
-const shuffleCards = () => {
-  return [...colors, ...colors]
-    .sort(() => Math.random() - 0.5)
-    .map((color) => ({ color, isFlipped: false }));
+const shuffleCards = (cards) => {
+  const shuffled = (cards || [...colors, ...colors])
+  .sort(() => Math.random() - 0.5)
+  
+  return cards ? shuffled : shuffled.map((color, idx) => ({ id: idx, color, isFlipped: false }));
 };
 
 export default function App() {
   const [cards, setCards] = useState(shuffleCards());
-  const [flippedIndices, setFlippedIndices] = useState([]);
+  const flippedIndicesRef = useRef([])
   const [rounds, setRounds] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [games, setGames] = useState([]);
 
   const handleCardClick = useCallback(
-    (index) => {
-      if (flippedIndices.length === 2 || cards[index].isFlipped) return;
+    (colorId) => () => {
+      const getColorIdxById = (id) => cards.findIndex(c => c.id === id)
+      const index = getColorIdxById(colorId);
+      const selectedColor = cards[index]
+      
+      const isFlippingCardDisabled = flippedIndicesRef.current.length === 2 || selectedColor.isFlipped
+      
+      if (isFlippingCardDisabled) return;
 
+      // flip card selected
       const newCards = [...cards];
       newCards[index].isFlipped = true;
       setCards(newCards);
 
-      const newFlippedIndices = [...flippedIndices, index];
-      setFlippedIndices(newFlippedIndices);
+      // update temporary flipped cards by round
+      const newFlippedIndices = [...flippedIndicesRef.current, selectedColor.id];
+      flippedIndicesRef.current = newFlippedIndices
 
-      if (newFlippedIndices.length === 2) {
+      const hasRoundEnded = newFlippedIndices.length === 2
+      if (hasRoundEnded) {
         setRounds((prev) => prev + 1);
 
-        if (cards[newFlippedIndices[0]].color === cards[newFlippedIndices[1]].color) {
-          setFlippedIndices([]);
-          if (newCards.every((card) => card.isFlipped)) {
+        const flippedCard0Idx = getColorIdxById(newFlippedIndices[0])
+        const isFlippedCardsMatching = cards[flippedCard0Idx].color === selectedColor.color
+
+        if (isFlippedCardsMatching) {
+          
+          flippedIndicesRef.current = []
+
+          const hasGameEnded = newCards.every((card) => card.isFlipped)
+          if (hasGameEnded) {
             setGameOver(true);
           }
-        } else {
+        } else { // face card down when 2 cards don't match
           setTimeout(() => {
             const resetCards = [...newCards];
-            newFlippedIndices.forEach((i) => {
-              resetCards[i].isFlipped = false;
+            newFlippedIndices.forEach((flippedId) => {
+              const cardIdx = cards.findIndex(c => c.id === flippedId)
+              resetCards[cardIdx].isFlipped = false;
             });
-            setCards(resetCards);
-            setFlippedIndices([]);
+            setCards(shuffleCards(resetCards));
+          flippedIndicesRef.current = []
           }, 1000);
         }
       }
     },
-    [cards, flippedIndices]
+    [cards]
   );
 
   const startNewGame = useCallback(() => {
     setGames((prev) => [...prev, rounds]);
     setCards(shuffleCards());
-    setFlippedIndices([]);
+    flippedIndicesRef.current = []
     setRounds(0);
     setGameOver(false);
   }, [rounds]);
@@ -84,10 +101,10 @@ export default function App() {
         <div className="grid grid-cols-4 gap-4 mb-6">
           {cards.map((card, index) => (
             <GameCard
-              key={index}
+              key={`${card.color}_${index}`}
               color={card.color}
               isFlipped={card.isFlipped}
-              onClick={() => handleCardClick(index)}
+              onClick={handleCardClick(card.id)}
             />
           ))}
         </div>
