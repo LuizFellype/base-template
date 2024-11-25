@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useMemo, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -131,7 +131,7 @@ export default function App() {
         toggleItem,
         deleteItem,
         editItem 
-    } = useCallback(() => {
+    } = useMemo(() => {
         const toggleItem = (id) => {
             setItems(items.map((item) => (item.id === id ? { ...item, done: !item.done, deleted: false } : item)));
         };
@@ -177,7 +177,7 @@ export default function App() {
 
     return (
         <div className="container mx-auto p-4 max-w-md">
-            <h1 className="text-3xl font-bold mb-4">Shopping List Organizer</h1>
+            <h1 className="text-3xl font-bold mb-4">aShopping List Organizer</h1>
             <Tabs defaultValue="list">
                 <TabsList className="mb-4">
                     <TabsTrigger value="list">Current List</TabsTrigger>
