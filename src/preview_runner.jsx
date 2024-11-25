@@ -7,10 +7,26 @@ import { createRoot } from 'react-dom/client';
 import { FolderTree, File, AlertTriangle } from 'lucide-react';
 import './index.css';
 
+const getHierarchy = (tasks) => {
+  const hierarchy = {};
+  tasks.forEach(task => {
+    const parts = task.fullPath.split('/');
+    let current = hierarchy;
+    parts.forEach((part, index) => {
+      if (!current[part]) {
+        current[part] = index === parts.length - 1 ? task : {};
+      }
+      current = current[part];
+    });
+  });
+  return hierarchy
+}
 const Preview_Runner_Do_Not_Edit = () => {
   const [tasks, setTasks] = useState([]);
   const [currentTask, setCurrentTask] = useState(null);
   const [showHierarchy, setShowHierarchy] = useState(false);
+
+  const hierarchy = getHierarchy(tasks)
 
   useEffect(() => {
     const importTasks = async () => {
@@ -51,19 +67,14 @@ const Preview_Runner_Do_Not_Edit = () => {
     importTasks();
   }, []);
 
-  const FolderHierarchy = () => {
-    const hierarchy = {};
-    tasks.forEach(task => {
-      const parts = task.fullPath.split('/');
-      let current = hierarchy;
-      parts.forEach((part, index) => {
-        if (!current[part]) {
-          current[part] = index === parts.length - 1 ? task : {};
-        }
-        current = current[part];
-      });
-    });
+  const onTaskClick = (taskContent) => () => {
+    setCurrentTask(taskContent);
+    if (!taskContent.isValid) {
+      console.warn(`Invalid or empty task: ${taskContent.fullPath}`);
+    }
+  }
 
+  const FolderHierarchy = () => {
     const renderFolder = (folder, path = '') => {
       return (
         <ul className="pl-4">
@@ -79,19 +90,13 @@ const Preview_Runner_Do_Not_Edit = () => {
                 </>
               ) : (
                 <span
-                  className={`flex items-center cursor-pointer ${
-                    content.isValid
-                      ? currentTask && content.fullPath === currentTask.fullPath
-                        ? 'font-bold text-green-400 hover:text-green-400'
-                        : 'text-white hover:text-green-200'
-                      : 'text-yellow-300 hover:text-yellow-100'
-                  }`}
-                  onClick={() => {
-                    setCurrentTask(content);
-                    if (!content.isValid) {
-                      console.warn(`Invalid or empty task: ${content.fullPath}`);
-                    }
-                  }}
+                  className={`flex items-center cursor-pointer ${content.isValid
+                    ? currentTask && content.fullPath === currentTask.fullPath
+                      ? 'font-bold text-green-400 hover:text-green-400'
+                      : 'text-white hover:text-green-200'
+                    : 'text-yellow-300 hover:text-yellow-100'
+                    }`}
+                  onClick={onTaskClick(content)}
                 >
                   {content.isValid ? (
                     <File size={16} className="mr-1" />
@@ -110,6 +115,28 @@ const Preview_Runner_Do_Not_Edit = () => {
     return renderFolder(hierarchy);
   };
 
+  const allModels = Object.entries(hierarchy?.['.']?.tasks[currentTask?.id] || {})
+
+  const taskSelection = (<div className='bg-slate-400 bg-opacity-10 fixed bottom-4 z-10 left-4 p-1'>
+    <button
+      onClick={() => setShowHierarchy((prev) => !prev)}
+      className="p-2 bg-black bg-opacity-10 rounded "
+    >
+      {currentTask && (
+        <>
+          Task {currentTask.id}: <span className="font-bold">{currentTask.name}</span>
+        </>
+      )}
+
+    </button>
+
+    <div className='flex justify-between mt-2'>
+      {allModels?.map(([fileName, content]) => {
+        return <button className={`${content.name === currentTask.name ? 'hidden' : ''} rounded bg-slate-700 bg-opacity-5 p-1`} key={`${currentTask?.id}_${fileName}`} onClick={onTaskClick(content)}>{fileName}</button>
+      })}
+    </div>
+  </div>)
+
   return (
     <div className="p-4 h-screen flex flex-col">
       <div className="flex-grow">
@@ -123,16 +150,9 @@ const Preview_Runner_Do_Not_Edit = () => {
           </div>
         )}
       </div>
-      <button 
-      onClick={() => setShowHierarchy((prev) => !prev)} 
-      className="fixed bottom-4 left-4 px-4 py-2 bg-black bg-opacity-10 rounded z-10"
-    >
-      {currentTask && (
-        <>
-          Task {currentTask.id}: <span className="font-bold">{currentTask.name}</span>
-        </>
-      )}
-    </button>
+
+      {taskSelection}
+
       {showHierarchy && (
         <div className="fixed bottom-16 left-4 p-4 bg-black bg-opacity-75 backdrop-blur-md rounded max-h-[70vh] w-[300px] overflow-auto">
           <h3 className="text-lg font-semibold mb-2 text-white">Select Preview File</h3>
