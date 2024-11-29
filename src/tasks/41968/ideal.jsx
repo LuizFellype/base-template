@@ -17,9 +17,14 @@ const usePlayerSelection = () => {
   }, [newPlayer, players]);
 
   const selectPlayer = useCallback((player) => {
-    if (selectedPlayers.length < 2 && !selectedPlayers.includes(player)) {
-      setSelectedPlayers([...selectedPlayers, player]);
+    if (selectedPlayers.length < 2) {
+      if (!selectedPlayers.includes(player)) {
+        setSelectedPlayers([...selectedPlayers, player]);
+      }
+      return 
     }
+    setSelectedPlayers([selectedPlayers[1], player]);
+
   }, [selectedPlayers]);
 
   return { players, selectedPlayers, newPlayer, setNewPlayer, addPlayer, selectPlayer };
@@ -69,6 +74,7 @@ const useGameLogic = (selectedPlayers) => {
     setBoard(Array(9).fill(null));
     setCurrentPlayer(0);
     setWinner(null);
+    playsHistoryRef.current = []
   }, []);
 
   return { board, currentPlayer, winner, playsHistory: playsHistoryRef.current, handleCellClick, resetGame };
@@ -150,7 +156,6 @@ const ReplayBoard = ({ playsHistory }) => {
 
   useEffect(() => {
     if (step < 9) {
-
       if (!!playsHistory[step]) {
         const timer = setTimeout(() => {
           setReplayBoard(prev => {
@@ -192,6 +197,12 @@ export default function App() {
       saveMatch(selectedPlayers, board, winner, playsHistory);
       resetGame();
   };
+  const handlePlayerSelection = (player) => {
+    const hasGameStarted = !!playsHistory.length
+    if (!hasGameStarted) {
+      selectPlayer(player)
+    }
+  };
 
   const gameStatus = useMemo(() => {
     if (winner === 'Tie') return "It's a tie!";
@@ -200,11 +211,6 @@ export default function App() {
 
     return `${selectedPlayers[currentPlayer]}'s turn`;
   }, [winner, selectedPlayers, currentPlayer]);
-  // const gameStatus = () => {
-  //   if (winner === 'Tie') return "It's a tie!";
-  //   if (winner) return `${winner} wins!`;
-  //   return `${selectedPlayers[currentPlayer]}'s turn`;
-  // };
 
   return (
     <div className="container mx-auto p-4">
@@ -215,7 +221,7 @@ export default function App() {
         newPlayer={newPlayer}
         setNewPlayer={setNewPlayer}
         addPlayer={addPlayer}
-        selectPlayer={selectPlayer}
+        selectPlayer={handlePlayerSelection}
       />
       {selectedPlayers.length === 2 && (
         <Card className="mb-4">
