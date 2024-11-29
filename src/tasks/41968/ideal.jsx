@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,7 +135,7 @@ const GameBoard = ({ board, handleCellClick }) => (
   </div>
 );
 
-const MatchHistory = ({ matches }) => (
+const MatchHistory = memo(({ matches }) => (
   <Accordion type="single" collapsible className="w-full">
     {matches.map((match, index) => (
       <AccordionItem key={index} value={`item-${index}`}>
@@ -148,7 +148,7 @@ const MatchHistory = ({ matches }) => (
       </AccordionItem>
     ))}
   </Accordion>
-);
+));
 
 const ReplayBoard = ({ playsHistory }) => {
   const [replayBoard, setReplayBoard] = useState(Array(9).fill(null));
