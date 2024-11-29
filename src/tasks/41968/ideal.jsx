@@ -31,17 +31,17 @@ const useGameLogic = (selectedPlayers) => {
   const [winner, setWinner] = useState(null);
   const playsHistoryRef = useRef([]); // [{ idx: 0, marker: 'A' }, { idx: 7, marker: 'B' }]
 
-  const checkWinner = useCallback((board) => {
+  const checkWinner = useCallback((squares) => {
     const lines = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
       [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
       [0, 4, 8], [2, 4, 6] // Diagonal
     ];
 
-    for (let line of lines) {
-      const [a, b, c] = line;
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a];
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
       }
     }
 
@@ -134,7 +134,7 @@ const MatchHistory = ({ matches }) => (
     {matches.map((match, index) => (
       <AccordionItem key={index} value={`item-${index}`}>
         <AccordionTrigger>
-          {match.players[0]} vs {match.players[1]} - Winner: {match.winner === 'Tie' ? 'Tie' : match.players[match.winner === match.players[0][0] ? 0 : 1]}
+          {match.players[0]} vs {match.players[1]} - Winner: {match.winner === 'Tie' ? 'Tie' : match.winner}
         </AccordionTrigger>
         <AccordionContent>
           <ReplayBoard playsHistory={match.playsHistory} initialBoard={match.board} />
@@ -178,20 +178,33 @@ const ReplayBoard = ({ playsHistory }) => {
 };
 
 export default function App() {
-  const { players, selectedPlayers, newPlayer, setNewPlayer, addPlayer, selectPlayer } = usePlayerSelection();
-  const { board, currentPlayer, winner, playsHistory, handleCellClick, resetGame } = useGameLogic(selectedPlayers);
+  const { 
+    players, selectedPlayers, newPlayer, 
+    setNewPlayer, addPlayer, selectPlayer 
+  } = usePlayerSelection();
+  const { 
+    board, currentPlayer, winner, playsHistory, 
+    handleCellClick, resetGame 
+  } = useGameLogic(selectedPlayers);
   const { matches, saveMatch } = useMatchHistory();
 
-  const handleSaveMatch = useCallback(() => {
+  const handleSaveMatch = () => {
       saveMatch(selectedPlayers, board, winner, playsHistory);
       resetGame();
-  }, [winner, selectedPlayers, board, saveMatch, resetGame]);
+  };
 
   const gameStatus = useMemo(() => {
     if (winner === 'Tie') return "It's a tie!";
-    if (winner) return `${selectedPlayers[selectedPlayers[0][0] === winner ? 0 : 1]} wins!`;
+    
+    if (winner) return `${winner} wins!`;
+
     return `${selectedPlayers[currentPlayer]}'s turn`;
   }, [winner, selectedPlayers, currentPlayer]);
+  // const gameStatus = () => {
+  //   if (winner === 'Tie') return "It's a tie!";
+  //   if (winner) return `${winner} wins!`;
+  //   return `${selectedPlayers[currentPlayer]}'s turn`;
+  // };
 
   return (
     <div className="container mx-auto p-4">
