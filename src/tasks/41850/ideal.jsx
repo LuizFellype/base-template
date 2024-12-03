@@ -8,7 +8,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const matchesKey = "basketballMatchesIdeal"
 const initialPlayerStats = {
   points: 0,
   assists: 0,
@@ -45,7 +44,7 @@ const PlayerStats = ({ player, updateStat }) => (
       <CardTitle className="text-lg">{player.name}</CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {Object.entries(player).map(([stat, value]) => {
           if (stat === "name") return null;
           return (
@@ -158,14 +157,7 @@ const initTeamState = (name) => {
 export default function App() {
   const [team1, setTeam1] = useState(initTeamState('Team 1'));
   const [team2, setTeam2] = useState(initTeamState('Team 2'));
-  const [matches, setMatches] = useState(() => {
-    const savedMatches = localStorage.getItem(matchesKey);
-    
-    if (savedMatches) {
-      return JSON.parse(savedMatches);
-    }
-    return []
-  });
+  const [matches, setMatches] = useState([]);
 
   const updateTeam1Stat = useCallback((playerIndex, value, stat) => {
     setTeam1(updateStat(team1, playerIndex, value, stat))
@@ -183,7 +175,6 @@ export default function App() {
 
     const updatedMatches = [...matches, newMatch];
     setMatches(updatedMatches);
-    localStorage.setItem(matchesKey, JSON.stringify(updatedMatches));
 
     // Reset the game
     setTeam1({ ...initialTeamStats, name: "Team 1" });
