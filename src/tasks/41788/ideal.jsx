@@ -47,30 +47,32 @@ function TaskForm({ onAddTask, task = {}, onUpdate }) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
             />
-            <Select value={type} onValueChange={setType}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select Type" />
-                </SelectTrigger>
-                <SelectContent>
-                    {TASK_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                            {t}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                    {PRIORITIES.map((p) => (
-                        <SelectItem key={p} value={p}>
-                            {p}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2">
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {TASK_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>
+                                {t}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={priority} onValueChange={setPriority}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select Priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {PRIORITIES.map((p) => (
+                            <SelectItem key={p} value={p}>
+                                {p}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             {onUpdate &&
                 <Select
                     value={status}
@@ -95,7 +97,7 @@ function TaskForm({ onAddTask, task = {}, onUpdate }) {
 
 function TaskCard({ task, onOpenDetails }) {
     return (
-        <Card className="mb-2 cursor-pointer" onClick={() => onOpenDetails(task)}>
+        <Card className="mb-2 cursor-pointer hover:shadow" onClick={() => onOpenDetails(task)}>
             <CardHeader>
                 <CardTitle className="text-sm">{task.name}</CardTitle>
             </CardHeader>
@@ -147,18 +149,23 @@ export default function App() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Task Organizer</h1>
+            <h1 className="text-2xl font-bold mb-4 text-center">Task Organizer</h1>
             <TaskForm onAddTask={addTask} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8 ">
                 {STATUSES.map((status) => (
-                    <div key={status}>
-                        <h2 className="text-lg font-semibold mb-2">{status}</h2>
-                        {tasks
-                            .filter((task) => task.status === status)
-                            .map((task) => (
-                                <TaskCard key={task.id} task={task} onOpenDetails={openTaskDetails} />
-                            ))}
-                    </div>
+                    <Card key={status}>
+                        <CardHeader>
+                            <CardTitle>{status}</CardTitle>
+
+                            <CardContent className="flex gap-2 flex-wrap">
+                                {tasks
+                                    .filter((task) => task.status === status)
+                                    .map((task) => (
+                                        <TaskCard key={task.id} task={task} onOpenDetails={openTaskDetails} />
+                                    ))}
+                            </CardContent>
+                        </CardHeader>
+                    </Card>
                 ))}
             </div>
             {selectedTask && (
