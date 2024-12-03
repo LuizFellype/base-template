@@ -103,36 +103,46 @@ const PlayerSelection = ({ players, selectedPlayers, newPlayer, setNewPlayer, ad
           placeholder="Enter player name"
           className="mr-2"
         />
+        
         <Button onClick={addPlayer}>Add Player</Button>
       </div>
       <div className="flex flex-wrap">
         {players.map((player) => (
-          <Button
-            key={player}
-            onClick={() => selectPlayer(player)}
-            disabled={selectedPlayers.includes(player)}
-            className="m-1"
-          >
-            {player}
-          </Button>
+          <Card key={player}
+          onClick={() => selectPlayer(player)}
+          disabled={selectedPlayers.includes(player)}
+          className={`m-1 hover:shadow cursor-pointer ${selectedPlayers.includes(player?.name || player) ? 'bg-neutral-50' : ''}`}><CardHeader>
+          <CardTitle>{player}</CardTitle>
+        </CardHeader></Card>
         ))}
       </div>
     </CardContent>
   </Card>
 );
 
-const GameBoard = ({ board, handleCellClick }) => (
-  <div className="grid grid-cols-3 gap-2 mb-4">
-    {board.map((cell, index) => (
-      <Button
-        key={index}
-        onClick={() => handleCellClick(index)}
-        className="h-16 text-2xl font-bold"
-      >
-        {cell}
-      </Button>
-    ))}
-  </div>
+const GameBoard = memo(({ board, handleCellClick, selectedPlayers, currentPlayer }) => (
+    <div className="grid mx-auto grid-cols-3 w-3/4 gap-1 mb-4 bg-neutral-800">
+      {board.map((cell, index) => {
+        const isFirstPlayer = selectedPlayers[0] === selectedPlayers[currentPlayer]
+
+        const player = cell !== null ? cell.toLocaleLowerCase() : isFirstPlayer ? selectedPlayers[0] : selectedPlayers[1]
+
+        const colorsByPlayer = {
+          [`${selectedPlayers[0]}`]: 'text-orange-300 hover:bg-orange-200',
+          [`${selectedPlayers[1]}`]: 'text-purple-300 hover:bg-purple-200',
+        }[player]
+
+        return (
+          <Button
+            key={index}
+            onClick={() => handleCellClick(index)}
+            className={`h-16 text-2xl color- font-bold bg-white rounded-none ${colorsByPlayer}`}
+          >
+            {cell}
+          </Button>
+      )})}
+    </div>
+  )
 );
 
 const MatchHistory = memo(({ matches }) => (
@@ -209,12 +219,17 @@ export default function App() {
     
     if (winner) return `${winner} wins!`;
 
-    return `${selectedPlayers[currentPlayer]}'s turn`;
+    return `${selectedPlayers[currentPlayer]?.toUpperCase()}'s turn`;
   }, [winner, selectedPlayers, currentPlayer]);
+  
+  const colorsByPlayer = {
+    [`${selectedPlayers[0]}`]: 'text-orange-300',
+    [`${selectedPlayers[1]}`]: 'text-purple-300',
+  }[selectedPlayers[currentPlayer]]
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Tic Tac Toe</h1>
+      <h1 className="text-3xl font-bold mb-4 text-center">Tic Tac Toe</h1>
       <PlayerSelection
         players={players}
         selectedPlayers={selectedPlayers}
@@ -226,10 +241,10 @@ export default function App() {
       {selectedPlayers.length === 2 && (
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle>{gameStatus}</CardTitle>
+            <CardTitle className={`${colorsByPlayer} text-center`}>{gameStatus}</CardTitle>
           </CardHeader>
           <CardContent>
-            <GameBoard board={board} handleCellClick={handleCellClick} />
+            <GameBoard board={board} handleCellClick={handleCellClick} selectedPlayers={selectedPlayers} currentPlayer={currentPlayer} />
             <Button onClick={handleSaveMatch} disabled={!winner}>Save Match</Button>
           </CardContent>
         </Card>
