@@ -25,7 +25,7 @@ function TaskForm({ onAddTask, task = {}, onUpdate }) {
         if (!!onUpdate) {
             onUpdate(newTask)
         } else {
-            onAddTask(task);
+            onAddTask(newTask);
             setName("");
             setDescription("");
             setType(TASK_TYPES[0]);
