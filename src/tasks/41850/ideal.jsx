@@ -39,7 +39,7 @@ const StatButton = ({ onClick, children }) => (
 );
 
 const PlayerStats = ({ player, updateStat }) => (
-  <Card className="mb-4">
+  <Card className="mb-4 bg-green-100">
     <CardHeader>
       <CardTitle className="text-lg">{player.name}</CardTitle>
     </CardHeader>
@@ -65,8 +65,8 @@ const PlayerStats = ({ player, updateStat }) => (
   </Card>
 );
 
-const MatchDetails = ({ team }) => {
-    return (<div className="grid grid-cols-2">
+const MatchDetails = ({ team, className }) => {
+    return (<div className={`grid grid-cols-2 ${className}`}>
         <span>Points: {team.totalPoints || 0}.</span>
         <span>Assistances: {team.totalAssists || 0}.</span>
         <span>Blocks: {team.totalBlocks || 0}.</span>
@@ -75,11 +75,11 @@ const MatchDetails = ({ team }) => {
     </div>)
 }
 
-const TeamStats = memo(({ team, onUpdateStat }) => (
-  <Card className="mb-4">
+const TeamStats = memo(({ team, onUpdateStat, className }) => (
+  <Card className={`mb-4 ${className} drop-shadow-2xl`}>
     <CardHeader>
-      <CardTitle>{team.name}</CardTitle>
-      <MatchDetails team={team} />
+      <CardTitle className="text-center text-red-600 tracking-wide drop-shadow-lg hover:animate-pulse">{team.name}</CardTitle>
+      <MatchDetails className="text-center" team={team} />
     </CardHeader>
     <CardContent>
       <div className="space-y-4">
@@ -183,12 +183,12 @@ export default function App() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">3x3 Basketball Match Statistics</h1>
+      <h1 className="text-2xl font-bold mb-4 drop-shadow-lg text-pink-400 bg-pink-50 hover:animate-pulse rounded-lg px-2">3x3 Basketball Match Statistics</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <TeamStats team={team1} onUpdateStat={updateTeam1Stat} />
-        <TeamStats team={team2} onUpdateStat={updateTeam2Stat} />
+        <TeamStats className="bg-orange-400" team={team1} onUpdateStat={updateTeam1Stat} />
+        <TeamStats className="bg-purple-400" team={team2} onUpdateStat={updateTeam2Stat} />
       </div>
-      <Button className="w-full my-4" onClick={saveMatch}>
+      <Button className="w-full my-4 bg-pink-700 hover:bg-pink-400 hover:text-black" onClick={saveMatch}>
         Save Match
       </Button>
       <h2 className="text-xl font-semibold mb-2">Match History</h2>
