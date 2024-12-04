@@ -11,22 +11,24 @@ const initialUsers = [
 
 const Post = ({ post, onLike, onDislike, onShare, isShared }) => {
   return (
-    <Card className={`mb-4 ${isShared ? "border-l-4 border-black" : ""}`}>
+    <Card dir="ltr" className={`mb-4 ${isShared ? "border-l-4 border-black" : ""}`}>
       <CardHeader>
-        <CardTitle>{post.userName}</CardTitle>
-        <span>{post.ownerName}</span>
+        <CardTitle >{post.userName}</CardTitle>
+        <span className="text-purple-400">{post.ownerName}</span>
       </CardHeader>
-      <CardContent>{post.content}</CardContent>
+      
+      <CardContent className="border-s-2 border-green-200 pt-0 px-2 pb-4 ml-5 mr-4 mb-6">{post.content}</CardContent>
+
       <CardFooter className="flex justify-between">
         <div>
-          <Button onClick={() => onLike(post.id)} className="mr-2">
+          <Button onClick={() => onLike(post.id)} className="mr-2 bg-orange-400 hover:bg-orange-500">
             Like ({post.likes})
           </Button>
-          <Button onClick={() => onDislike(post.id)} className="mr-2">
+          <Button onClick={() => onDislike(post.id)} className="mr-2 bg-red-400 hover:bg-red-500">
             Dislike ({post.dislikes})
           </Button>
         </div>
-        <Button onClick={() => onShare(post)}>Share ({post.shared})</Button>
+        <Button disabled={!onShare} onClick={() => onShare(post)} className="bg-purple-500 hover:bg-purple-600">Share ({post.shared})</Button>
       </CardFooter>
     </Card>
   );
@@ -113,18 +115,19 @@ const Feed = ({ currentUser, users, setPosts, setCurrentPage }) => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        <Button onClick={() => setCurrentPage("profile")} variant="link">
-          {currentUser.name}'s Feed
+      <h1 className="text-2xl font-bold text-center mb-2">
+        <Button className="p-0" onClick={() => setCurrentPage("profile")} variant="link">
+          <span className="text-3xl">{currentUser.name}</span>'s
+          Feed
         </Button>
       </h1>
       <Textarea
         value={newPostContent}
         onChange={(e) => setNewPostContent(e.target.value)}
         placeholder="What's on your mind?"
-        className="mb-4"
+        className="mb-4 border-2 hover:border-green-200"
       />
-      <Button onClick={handlePublish} className="mb-4">
+      <Button onClick={handlePublish} className="mb-4 bg-green-600 hover:bg-green-700">
         Publish
       </Button>
       <Tabs defaultValue="personal">
@@ -134,7 +137,7 @@ const Feed = ({ currentUser, users, setPosts, setCurrentPage }) => {
         </TabsList>
         
         <TabsContent value="personal">
-          <PostsList user={currentUser} onLike={handleLike()} onDislike={handleDislike()} onShare={handleShare} />
+          <PostsList user={currentUser} onLike={handleLike()} onDislike={handleDislike()} />
         </TabsContent>
         
         <TabsContent value="friends">
@@ -187,7 +190,8 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="bg-blue-100 h-full flex rounded-full">
+    <div className="max-w-2xl mx-auto my-auto bg-blue-400 rounded-3xl">
       <Button onClick={switchUser} className="mt-4 ml-4">
         Switch User
       </Button>
@@ -201,6 +205,7 @@ export default function App() {
       ) : (
         <Profile currentUser={currentUser} setCurrentPage={setCurrentPage} />
       )}
+    </div>
     </div>
   );
 }
